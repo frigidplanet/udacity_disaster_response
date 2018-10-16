@@ -1,16 +1,55 @@
 import sys
+import pandas as pd
+import re
+from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
-    pass
+    messages = pd.read_csv(messages_filepath)
+    categories = pd.read_csv(categories_filepath)
+
+    df = messages.join(categories.set_index('id'), on='id', how='left')
+
+    return df
 
 
 def clean_data(df):
-    pass
+    # create a dataframe of the 36 individual category columns
+    categories = df.categories.str.split(pat=';', expand=True)
 
+    # select the first row of the categories dataframe
+    row = categories[:1]
+
+    # use this row to extract a list of new column names for categories.
+    category_colnames = row.apply(lambda x: x.str[0:-2]).values.tolist()
+
+    # rename the columns of `categories`
+    categories.columns = category_colnames
+
+    for column in categories:
+        # set each value to be the last character of the string
+        categories[column] = categories[column].str[-1:]
+        
+        # convert column from string to numeric
+        categories[column] = categories[column].astype('int32')
+
+    df.drop(['categories'], inplace=True, axis=1)
+
+    # concatenate the original dataframe with the new `categories` dataframe
+    df = pd.concat([df, categories], axis=1)
+
+    # There is a bug in newer versions of pandas that will add parenthesis, commas, and tick-marks 
+    #   to the column name of the 2nd DF; this will fix that if it happens.
+    df.rename(columns = lambda x : re.sub(r"['(),]", "", str(x)), inplace=True)
+
+    # drop duplicates
+    df.drop_duplicates(inplace=True)
+
+    return df
 
 def save_data(df, database_filename):
-    pass  
+    engine = create_engine('sqlite:///' + database_filename)
+    df.to_sql('messages', engine, index=False, if_exists='replace')  
 
 
 def main():
