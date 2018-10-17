@@ -45,9 +45,12 @@ def clean_data(df):
     # drop duplicates
     df.drop_duplicates(inplace=True)
 
+    # clean up bad data in the related field
+    df.related[df.related == 2] = 0
+
     return df
 
-def save_data(df, database_filename):
+def save_data(df, database_filename="YourDatabaseName.db"):
     engine = create_engine('sqlite:///' + database_filename)
     df.to_sql('messages', engine, index=False, if_exists='replace')  
 
