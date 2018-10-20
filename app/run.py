@@ -52,10 +52,10 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
 
-    category_metrics = categoryMetrics(df)#.sort_values(by='true_percent', ascending=False, inplace=True)
+    category_metrics = categoryMetrics(df)
 
-    category_pct = category_metrics.groupby('category').sum()['true_percent'].sort_values(ascending=False)
-    category_names = list(category_pct.index)
+    category_cnt = category_metrics.groupby('category').sum()['true_count'].sort_values(ascending=False)
+    category_names = list(category_cnt.index)
 
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -82,7 +82,7 @@ def index():
             'data': [
                 Bar(
                     x=category_names,
-                    y=category_pct
+                    y=category_cnt
                 )
             ],
 
@@ -92,9 +92,9 @@ def index():
                     'b': '125'
                 },
                 'yaxis': {
-                    'title': "Percentage",
-                    'tickformat': ',.0%',
-                    'range': '[0,1]'
+                    'title': "Count"#,
+                    #'tickformat': ',.0%',
+                    #'range': '[0,1]'
                 },
                 'xaxis': {
                     #'title': "Category",
@@ -121,6 +121,8 @@ def go():
     # use model to predict classification for query
     classification_labels = model.predict([query])[0]
     classification_results = dict(zip(df.columns[4:], classification_labels))
+
+    print(classification_results)
 
     # This will render the go.html Please see that file. 
     return render_template(
