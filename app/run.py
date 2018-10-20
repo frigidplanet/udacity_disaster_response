@@ -25,12 +25,21 @@ def tokenize(text):
 
     return clean_tokens
 
+def categoryMetrics(df):
+    category_metrics = pd.DataFrame(df.columns.difference(['message', 'original', 'genre', 'id']).values, columns=['category'])
+    categories = df[df.columns.difference(['message', 'original', 'genre', 'id'])]
+    category_metrics['true_count'] = categories.sum().tolist()
+    category_metrics['false_count'] = categories.count().tolist() - category_metrics['true_count']
+    category_metrics['true_percent'] = category_metrics['true_count'] / categories.count().tolist() 
+    
+    return category_metrics
+
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
+engine = create_engine('sqlite:///./data/DisasterResponse.db')
 df = pd.read_sql_table('messages', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("./models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -42,7 +51,12 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-    
+
+    category_metrics = categoryMetrics(df)#.sort_values(by='true_percent', ascending=False, inplace=True)
+
+    category_pct = category_metrics.groupby('category').sum()['true_percent'].sort_values(ascending=False)
+    category_names = list(category_pct.index)
+
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -61,6 +75,26 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=category_names,
+                    y=category_pct
+                )
+            ],
+
+            'layout': {
+                'title': 'Positive Matches',
+                'margin': 'Margin(b=500)',
+                'yaxis': {
+                    'title': "Percentage"
+                },
+                'xaxis': {
+                    #'title': "Category",
+                    'tickangle': "45"
                 }
             }
         }
