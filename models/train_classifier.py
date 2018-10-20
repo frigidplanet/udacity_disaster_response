@@ -31,8 +31,8 @@ def load_data(database_filepath):
 def tokenize(text):
     stop_words = stopwords.words("english")
     
-    # remove punctuation
-    text = re.sub(r"[^a-zA-Z0-9]", " ", text)
+    # remove non words
+    text = re.sub(r"[^a-zA-Z]", " ", text)
     
     # tokenize text
     tokens = word_tokenize(text)
@@ -69,6 +69,7 @@ def build_model():
                                 )))
                     ])
 
+    # This is purposely limited to keep processing time minimal just for this example
     parameters = {
         'vect__ngram_range': ((1, 2), (1,1))
         ,'vect__max_df': (0.5, 1.0)
@@ -92,7 +93,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
         print(classification_report(Y_test[:,index], y_pred[:,index]))
 
 
-def save_model(model, model_filepath="your_model_name.pkl"):
+def save_model(model, model_filepath):
     
     fileObject = open(model_filepath,'wb') 
     pickle.dump(model, fileObject)  
@@ -127,7 +128,7 @@ def main():
         print('Please provide the filepath of the disaster messages database '\
               'as the first argument and the filepath of the pickle file to '\
               'save the model to as the second argument. \n\nExample: python '\
-              'train_classifier.py ../data/DisasterResponse.db classifier.pkl')
+              './models/train_classifier.py ./data/DisasterResponse.db ./models/classifier.pkl')
 
 
 if __name__ == '__main__':
