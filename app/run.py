@@ -87,10 +87,14 @@ def index():
             ],
 
             'layout': {
-                'title': 'Positive Matches',
-                'margin': 'Margin(b=500)',
+                'title': 'Category Distribution',
+                'margin': {
+                    'b': '125'
+                },
                 'yaxis': {
-                    'title': "Percentage"
+                    'title': "Percentage",
+                    'tickformat': ',.0%',
+                    'range': '[0,1]'
                 },
                 'xaxis': {
                     #'title': "Category",
