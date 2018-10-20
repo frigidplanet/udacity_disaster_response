@@ -52,7 +52,21 @@ def tokenize(text):
 def build_model():
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize))
                         , ('tfidf', TfidfTransformer())
-                        , ('moc', MultiOutputClassifier(xgb.XGBClassifier(nthread=-1)))
+                        , ('moc', MultiOutputClassifier(xgb.XGBClassifier(
+                                 #learning_rate =0.1,
+                                 #n_estimators=1000,
+                                 reg_alpha=.01,
+                                 reg_lambda=.01,
+                                 max_depth=9,
+                                 min_child_weight=5,
+                                 gamma=0.4,
+                                 subsample=0.6,
+                                 colsample_bytree=0.8,
+                                 #objective= 'binary:logistic',
+                                 nthread=-1,
+                                 #scale_pos_weight=1,
+                                 #seed=27
+                                )))
                     ])
 
     parameters = {
