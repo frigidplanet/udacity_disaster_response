@@ -3,6 +3,7 @@ import nltk
 import re
 import pickle
 import pandas as pd
+import xgboost as xgb
 
 from sqlalchemy import create_engine
 
@@ -15,11 +16,9 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.multiclass import OneVsRestClassifier
-from sklearn.svm import LinearSVC
 from sklearn.metrics import classification_report
 
-def load_data(database_filepath="YourDatabaseName.db"):
+def load_data(database_filepath):
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql_table('messages', engine)
     X = df.message.values
@@ -43,7 +42,6 @@ def tokenize(text):
     clean_tokens = []
     for tok in tokens:
         if tok not in stop_words:
-            #clean_tok = re.sub(r"[^a-zA-Z0-9]", " ", tok)
             clean_tok = lemmatizer.lemmatize(tok).lower().strip()
             clean_tok = lemmatizer.lemmatize(clean_tok, pos='v')
             clean_tokens.append(clean_tok)
@@ -54,26 +52,26 @@ def tokenize(text):
 def build_model():
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize))
                         , ('tfidf', TfidfTransformer())
-                        , ('moc', MultiOutputClassifier(OneVsRestClassifier(LinearSVC(random_state=42))))
+                        , ('moc', MultiOutputClassifier(xgb.XGBClassifier(nthread=-1)))
                     ])
 
     parameters = {
         'vect__ngram_range': ((1, 2), (1,1))
-        ,'vect__max_df': (.25, 0.5)
+        ,'vect__max_df': (0.5, 1.0)
         ,'vect__max_features': (None, 1000)
-        ,'tfidf__use_idf': (True, False)
-        ,'tfidf__smooth_idf': (True, False)
-        #,'moc__estimator__estimator__dual': (True, False)
-        #,'moc__estimator__estimator__max_iter': (1000, 1500)
     }
 
-    cv = GridSearchCV(pipeline, param_grid=parameters)
+    cv = GridSearchCV(pipeline, param_grid=parameters, cv=3)
 
     return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
     y_pred = model.predict(X_test)
+
+    print("Best Params:")
+    for key,val in model.best_params_.items(): 
+        print("\t", key, "=>", val)
 
     for index in range(Y_test.shape[1]):
         print(category_names[index])
