@@ -46,11 +46,12 @@ def clean_data(df):
     df.drop_duplicates(inplace=True)
 
     # clean up bad data in the related field
+    #   I chose to set them to 0 instead of dropping them.
     df.related[df.related == 2] = 0
 
     return df
 
-def save_data(df, database_filename="YourDatabaseName.db"):
+def save_data(df, database_filename):
     engine = create_engine('sqlite:///' + database_filename)
     df.to_sql('messages', engine, index=False, if_exists='replace')  
 
@@ -58,6 +59,7 @@ def save_data(df, database_filename="YourDatabaseName.db"):
 def main():
     if len(sys.argv) == 4:
 
+        # Read the command line args
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
 
         print('Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}'
@@ -76,9 +78,9 @@ def main():
         print('Please provide the filepaths of the messages and categories '\
               'datasets as the first and second argument respectively, as '\
               'well as the filepath of the database to save the cleaned data '\
-              'to as the third argument. \n\nExample: python process_data.py '\
-              'disaster_messages.csv disaster_categories.csv '\
-              'DisasterResponse.db')
+              'to as the third argument. \n\nExample: python ./data/process_data.py '\
+              './data/disaster_messages.csv ./data/disaster_categories.csv '\
+              './data/DisasterResponse.db')
 
 
 if __name__ == '__main__':
