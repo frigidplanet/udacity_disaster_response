@@ -1,6 +1,8 @@
 import json
 import plotly
 import pandas as pd
+import gzip
+import pickle
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -39,7 +41,10 @@ engine = create_engine('sqlite:///./data/DisasterResponse.db')
 df = pd.read_sql_table('messages', engine)
 
 # load model
-model = joblib.load("./models/classifier.pkl")
+fileObject = gzip.open("./models/classifier.pkl",'rb') 
+model = pickle.load(fileObject)
+fileObject.close()
+
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -133,7 +138,7 @@ def go():
 
 
 def main():
-    app.run(host='0.0.0.0', port=3001, debug=True)
+    app.run(host='127.0.0.1', port=3001, debug=True)
 
 
 if __name__ == '__main__':
