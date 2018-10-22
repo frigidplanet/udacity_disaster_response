@@ -5,6 +5,14 @@ from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
+    """
+    INPUT
+    messages_filepath - file path for the message data, in csv format
+    categories_filepath - file path for the category data, in csv format
+
+    OUTPUT
+    df - A dataframe of combined file data
+    """
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
 
@@ -14,6 +22,14 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    """
+    INPUT
+    df - A dataframe of data to clean
+
+    OUTPUT
+    df - A cleaned dataframe
+    """
+
     # create a dataframe of the 36 individual category columns
     categories = df.categories.str.split(pat=';', expand=True)
 
@@ -52,11 +68,21 @@ def clean_data(df):
     return df
 
 def save_data(df, database_filename):
+    """
+    Store the dataframe into a sqllite database file for future reference
+
+    INPUT
+    df - the dataframe to save
+    database_filename - the filename/path to save the dataframe into
+    """
     engine = create_engine('sqlite:///' + database_filename)
     df.to_sql('messages', engine, index=False, if_exists='replace')  
 
 
 def main():
+    """
+    The main event.  Uses the command line args to clean data and store into a sqllite database file.
+    """
     if len(sys.argv) == 4:
 
         # Read the command line args

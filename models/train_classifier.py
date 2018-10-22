@@ -21,6 +21,15 @@ from sklearn.metrics import classification_report
 
 
 def load_data(database_filepath):
+    """
+    INPUT
+    filepath - path to the database file
+    
+    OUTPUT
+    X - independent variables
+    y - dependent variables
+    category_names - dependent variable categories
+    """
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql_table('messages', engine)
     X = df.message.values
@@ -31,6 +40,13 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
+    """
+    INPUT
+    text - text to lemmatize and word tokenize
+    
+    OUTPUT
+    word tokens - tokenized words that have been passed through a lemmatizer
+    """
     stop_words = stopwords.words("english")
     
     # remove non words
@@ -52,6 +68,10 @@ def tokenize(text):
 
 
 def build_model():
+    """
+    OUTPUT
+    cv - grid search pipeline
+    """
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize))
                         , ('tfidf', TfidfTransformer())
                         , ('moc', MultiOutputClassifier(xgb.XGBClassifier(
@@ -84,6 +104,17 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    """
+    Prints the best model params from GridSearchCV
+    Prints a classification report for each dependent variable
+
+    INPUT
+    model - trained model to evaluate
+    X_text - independent variables, for testing the model
+    Y_test - dependent variables, used for test validation
+    category_names - category names for dependent variables
+    """
+
     y_pred = model.predict(X_test)
 
     print("Best Params:")
@@ -96,12 +127,22 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
+    """
+    Saves a model as a gzip pickle file
+
+    INPUT
+    model - the model to save
+    model_filepath - where to save the file and what to name it
+    """
     fileObject = gzip.open(model_filepath,'wb') 
     pickle.dump(model, fileObject)  
     fileObject.close()
 
 
 def main():
+    """
+    The main event.  Reads command line params to build/train/save model.
+    """
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
 

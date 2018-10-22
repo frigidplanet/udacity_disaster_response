@@ -17,6 +17,15 @@ from sqlalchemy import create_engine
 app = Flask(__name__)
 
 def tokenize(text):
+    """
+    Lemmatizes text and returns word tokens.
+
+    INPUT
+    text - text to lemmatize and tokenize
+
+    OUTPUT
+    tokens - tokenized words
+    """
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -28,6 +37,15 @@ def tokenize(text):
     return clean_tokens
 
 def categoryMetrics(df):
+    """
+    Generates category metrics from the provided dataframe.
+
+    INPUT
+    df - dataframe to pull catagory metrics from
+
+    OUTPUT
+    category_metrics - metrics about the categories in the datafrae
+    """
     category_metrics = pd.DataFrame(df.columns.difference(['message', 'original', 'genre', 'id']).values, columns=['category'])
     categories = df[df.columns.difference(['message', 'original', 'genre', 'id'])]
     category_metrics['true_count'] = categories.sum().tolist()
